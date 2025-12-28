@@ -19,7 +19,6 @@ if not HUGGINGFACE_API_KEY:
 
 GOOGLE_PLACES_BASE_URL = 'https://maps.googleapis.com/maps/api/place'
 HUGGINGFACE_API_URL = 'https://router.huggingface.co/v1/chat/completions'
-HUGGINGFACE_SENTIMENT_URL = 'https://api-inference.huggingface.co/models/nlptown/bert-base-multilingual-uncased-sentiment'
 HUGGINGFACE_GPT2_URL = 'https://router.huggingface.co/v1/chat/completions'
 
 @app.route('/api/health', methods=['GET'])
@@ -164,7 +163,7 @@ Response:"""
 
 @app.route('/api/analyze-sentiment', methods=['POST'])
 def analyze_sentiment():
-    """Analyze sentiment of a review text"""
+    """Analyze sentiment of a review text using the same model as generate-response"""
     data = request.get_json()
     
     if not data or 'text' not in data:
@@ -173,55 +172,91 @@ def analyze_sentiment():
     text = data['text']
     
     try:
-        # Call Hugging Face Sentiment Analysis API
+        # Use the same API endpoint and model as generate-response
+        prompt = f"""Analyze the sentiment of the following review text and determine if it is Positive, Neutral, or Negative.
+
+Review text: "{text}"
+
+Please analyze the sentiment and respond with ONLY one of these three words: "Positive", "Neutral", or "Negative".
+
+Sentiment:"""
+        
         headers = {
             'Authorization': f'Bearer {HUGGINGFACE_API_KEY}',
             'Content-Type': 'application/json'
         }
         
         payload = {
-            'inputs': text
+            'messages': [
+                {
+                    'role': 'user',
+                    'content': prompt
+                }
+            ],
+            'model': 'openai/gpt-oss-120b:cerebras',
+            'stream': False
         }
         
-        response = requests.post(HUGGINGFACE_SENTIMENT_URL, headers=headers, json=payload)
+        app.logger.info(f'Sending sentiment analysis request for text: {text[:50]}...')
+        response = requests.post(HUGGINGFACE_API_URL, headers=headers, json=payload, timeout=30)
         response.raise_for_status()
         
-        data = response.json()
+        api_data = response.json()
+        app.logger.info(f'HuggingFace API response: {str(api_data)[:200]}')
         
-        if isinstance(data, list) and len(data) > 0:
-            # Extract sentiment score and label
-            sentiment_data = data[0]
+        if 'choices' in api_data and len(api_data['choices']) > 0:
+            sentiment_result = api_data['choices'][0]['message']['content'].strip()
+            app.logger.info(f'Raw sentiment result: {sentiment_result}')
             
-            # The model returns scores for 1-5 stars, we need to interpret this
-            scores = sentiment_data
-            max_score = max(scores, key=lambda x: x['score'])
-            sentiment_score = float(max_score['label'].split()[0])  # Extract number from "1 star", "2 stars", etc.
+            # Parse the sentiment result
+            sentiment_result_lower = sentiment_result.lower()
             
-            # Convert to sentiment label
-            if sentiment_score >= 4:
+            if 'positive' in sentiment_result_lower:
                 sentiment_label = "Positive"
                 sentiment_color = "green"
-            elif sentiment_score >= 3:
-                sentiment_label = "Neutral"
-                sentiment_color = "orange"
-            else:
+                sentiment_score = 4.5  # High positive score
+            elif 'negative' in sentiment_result_lower:
                 sentiment_label = "Negative"
                 sentiment_color = "red"
+                sentiment_score = 2.0  # Low negative score
+            elif 'neutral' in sentiment_result_lower:
+                sentiment_label = "Neutral"
+                sentiment_color = "orange"
+                sentiment_score = 3.0  # Neutral score
+            else:
+                # Default to neutral if we can't determine
+                app.logger.warning(f'Could not parse sentiment from result: {sentiment_result}, defaulting to Neutral')
+                sentiment_label = "Neutral"
+                sentiment_color = "orange"
+                sentiment_score = 3.0
             
-            return jsonify({
+            result = {
                 'sentiment_score': sentiment_score,
                 'sentiment_label': sentiment_label,
                 'sentiment_color': sentiment_color,
-                'confidence': max_score['score'],
+                'confidence': 0.85,  # High confidence for AI model
                 'status': 'success'
-            })
+            }
+            app.logger.info(f'Sentiment analysis result: {result}')
+            return jsonify(result)
         else:
-            return jsonify({'error': 'No sentiment analysis result'}), 500
+            app.logger.error(f'No choices in API response: {api_data}')
+            return jsonify({'error': 'No sentiment analysis result from AI'}), 500
             
+    except requests.exceptions.Timeout:
+        app.logger.error('Sentiment analysis request timed out')
+        return jsonify({'error': 'Sentiment analysis request timed out. Please try again.'}), 504
     except requests.exceptions.RequestException as e:
+        app.logger.error(f'Sentiment API request exception: {str(e)}')
         return jsonify({'error': f'Sentiment API request failed: {str(e)}'}), 500
     except Exception as e:
-        return jsonify({'error': f'Server error: {str(e)}'}), 500
+        import traceback
+        error_trace = traceback.format_exc()
+        app.logger.error(f'Unexpected error in sentiment analysis: {str(e)}\n{error_trace}')
+        return jsonify({
+            'error': f'Server error: {str(e)}',
+            'traceback': error_trace if app.debug else None
+        }), 500
 
 @app.route('/api/predict-rating', methods=['POST'])
 def predict_rating():

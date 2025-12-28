@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Star, MessageCircle, ThumbsUp, ThumbsDown, Minus } from 'lucide-react';
+import React, { useState } from 'react';
+import { Star, MessageCircle, ThumbsUp, ThumbsDown, Minus, Brain } from 'lucide-react';
 import axios from 'axios';
 
 const ReviewList = ({ reviews, businessName, onError }) => {
@@ -8,39 +8,38 @@ const ReviewList = ({ reviews, businessName, onError }) => {
   const [loadingSentiments, setLoadingSentiments] = useState({});
   const [loadingResponses, setLoadingResponses] = useState({});
 
-  useEffect(() => {
-    if (reviews && reviews.length > 0) {
-      analyzeAllSentiments();
-    }
-  }, [reviews]);
+  const analyzeSentiment = async (review) => {
+    const reviewKey = review.time;
+    setLoadingSentiments(prev => ({ ...prev, [reviewKey]: true }));
 
-  const analyzeAllSentiments = async () => {
-    const newSentiments = {};
-    const newLoadingSentiments = {};
+    try {
+      const response = await axios.post('/api/analyze-sentiment', {
+        text: review.text
+      });
 
-    for (const review of reviews) {
-      newLoadingSentiments[review.time] = true;
-      try {
-        const response = await axios.post('/api/analyze-sentiment', {
-          text: review.text
-        });
-
-        if (response.data.status === 'success') {
-          newSentiments[review.time] = response.data;
-        }
-      } catch (error) {
-        console.error('Sentiment analysis error:', error);
-        newSentiments[review.time] = {
-          sentiment_label: 'Unknown',
-          sentiment_color: 'gray'
-        };
-      } finally {
-        newLoadingSentiments[review.time] = false;
+      if (response.data.status === 'success') {
+        setSentiments(prev => ({
+          ...prev,
+          [reviewKey]: response.data
+        }));
+      } else {
+        const errorMsg = response.data.error || 'Unknown error occurred';
+        onError(`Sentiment analysis failed: ${errorMsg}`);
       }
+    } catch (error) {
+      console.error('Sentiment analysis error:', error);
+      const errorMessage = error.response?.data?.error || error.message || 'Unknown error occurred';
+      setSentiments(prev => ({
+        ...prev,
+        [reviewKey]: {
+          sentiment_label: 'Error',
+          sentiment_color: 'gray'
+        }
+      }));
+      onError(`Failed to analyze sentiment: ${errorMessage}`);
+    } finally {
+      setLoadingSentiments(prev => ({ ...prev, [reviewKey]: false }));
     }
-
-    setSentiments(newSentiments);
-    setLoadingSentiments(newLoadingSentiments);
   };
 
   const generateAutoResponse = async (review) => {
@@ -158,28 +157,48 @@ const ReviewList = ({ reviews, businessName, onError }) => {
                   ) : (
                     <span className="badge bg-secondary text-white d-flex align-items-center">
                       <Minus size={16} />
-                      <span className="ms-1">Unknown</span>
+                      <span className="ms-1">Not Analyzed</span>
                     </span>
                   )}
                 </div>
 
-                <button
-                  className="btn btn-outline-primary btn-sm"
-                  onClick={() => generateAutoResponse(review)}
-                  disabled={isLoadingResponse}
-                >
-                  <MessageCircle size={16} className="me-1" />
-                  {isLoadingResponse ? (
-                    <>
-                      <div className="spinner-border spinner-border-sm me-1" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                      </div>
-                      Generating...
-                    </>
-                  ) : (
-                    'Generate Response'
-                  )}
-                </button>
+                <div className="d-flex gap-2">
+                  <button
+                    className="btn btn-outline-info btn-sm"
+                    onClick={() => analyzeSentiment(review)}
+                    disabled={isLoadingSentiment}
+                  >
+                    <Brain size={16} className="me-1" />
+                    {isLoadingSentiment ? (
+                      <>
+                        <div className="spinner-border spinner-border-sm me-1" role="status">
+                          <span className="visually-hidden">Loading...</span>
+                        </div>
+                        Analyzing...
+                      </>
+                    ) : (
+                      'Analyze Sentiment'
+                    )}
+                  </button>
+
+                  <button
+                    className="btn btn-outline-primary btn-sm"
+                    onClick={() => generateAutoResponse(review)}
+                    disabled={isLoadingResponse}
+                  >
+                    <MessageCircle size={16} className="me-1" />
+                    {isLoadingResponse ? (
+                      <>
+                        <div className="spinner-border spinner-border-sm me-1" role="status">
+                          <span className="visually-hidden">Loading...</span>
+                        </div>
+                        Generating...
+                      </>
+                    ) : (
+                      'Generate Response'
+                    )}
+                  </button>
+                </div>
               </div>
 
               {autoResponse && (

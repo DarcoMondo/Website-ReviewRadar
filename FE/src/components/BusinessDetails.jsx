@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Star, TrendingUp, MessageCircle } from 'lucide-react';
 import axios from 'axios';
 import RatingChart from './RatingChart';
@@ -10,16 +10,9 @@ const BusinessDetails = ({ business, onLoading, onError }) => {
   const [prediction, setPrediction] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
 
-  useEffect(() => {
-    if (business && business.reviews) {
-      setReviews(business.reviews);
-      generatePrediction();
-    }
-  }, [business]);
-
-  const generatePrediction = async () => {
+  const generatePrediction = useCallback(async () => {
     try {
-      if (!business.reviews || business.reviews.length < 3) {
+      if (!business?.reviews || business.reviews.length < 3) {
         return;
       }
 
@@ -38,7 +31,14 @@ const BusinessDetails = ({ business, onLoading, onError }) => {
       console.error('Prediction error:', error);
       // Don't show error for prediction as it's not critical
     }
-  };
+  }, [business]);
+
+  useEffect(() => {
+    if (business && business.reviews) {
+      setReviews(business.reviews);
+      generatePrediction();
+    }
+  }, [business, generatePrediction]);
 
   const getAverageRating = () => {
     if (!reviews || reviews.length === 0) return 0;
@@ -46,13 +46,7 @@ const BusinessDetails = ({ business, onLoading, onError }) => {
     return (sum / reviews.length).toFixed(1);
   };
 
-  const getRatingDistribution = () => {
-    const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    reviews.forEach(review => {
-      distribution[review.rating]++;
-    });
-    return distribution;
-  };
+  // Removed unused getRatingDistribution function
 
   return (
     <div className="business-details">

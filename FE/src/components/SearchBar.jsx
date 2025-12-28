@@ -9,6 +9,7 @@ const SearchBar = ({ onBusinessSelect, onLoading, onError }) => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const searchTimeoutRef = useRef(null);
   const latestQueryRef = useRef('');
+  const searchContainerRef = useRef(null);
 
   useEffect(() => {
     if (query.length < 2) {
@@ -30,6 +31,21 @@ const SearchBar = ({ onBusinessSelect, onLoading, onError }) => {
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     };
   }, [query]);
+
+  // Gestione click fuori dall'area dei suggerimenti
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+        setSelectedIndex(-1);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const searchBusinesses = async (searchTerm) => {
     try {
@@ -54,6 +70,7 @@ const SearchBar = ({ onBusinessSelect, onLoading, onError }) => {
 
   const handleBusinessSelect = async (business) => {
     try {
+      // Chiudi immediatamente i suggerimenti
       setShowSuggestions(false);
       setSuggestions([]);
       setSelectedIndex(-1);
@@ -96,13 +113,16 @@ const SearchBar = ({ onBusinessSelect, onLoading, onError }) => {
         setShowSuggestions(false);
         setSelectedIndex(-1);
         break;
+      default:
+        // Do nothing for other keys
+        break;
     }
   };
 
   return (
     <div className="row justify-content-center mb-4">
       <div className="col-lg-6 col-md-8">
-        <div className="position-relative">
+        <div className="position-relative" ref={searchContainerRef}>
           <div className="input-group input-group-lg shadow-sm">
             <span className="input-group-text bg-white border-end-0">
               <Search size={20} className="text-muted" />
@@ -125,7 +145,7 @@ const SearchBar = ({ onBusinessSelect, onLoading, onError }) => {
                 <div
                   key={business.place_id}
                   className={`p-3 border-bottom ${index === selectedIndex ? 'bg-primary text-white' : 'hover-bg-light'}`}
-                  onMouseDown={() => handleBusinessSelect(business)} // usa onMouseDown per non perdere focus
+                  onClick={() => handleBusinessSelect(business)}
                   onMouseEnter={() => setSelectedIndex(index)}
                   style={{ cursor: 'pointer' }}
                 >
