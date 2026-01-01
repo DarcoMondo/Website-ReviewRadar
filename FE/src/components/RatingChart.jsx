@@ -6,40 +6,60 @@ const RatingChart = ({ reviews }) => {
   const chartData = useMemo(() => {
     if (!reviews || reviews.length === 0) return [];
 
-    // Sort reviews by date and group by day
+    // Sort reviews by date and group by day (full date: day/month/year)
+    // Google Places API returns time in seconds, JavaScript Date expects milliseconds
     const sortedReviews = reviews
-      .sort((a, b) => new Date(a.time) - new Date(b.time))
-      .map(review => ({
-        ...review,
-        date: new Date(review.time).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric'
-        }),
-        timestamp: new Date(review.time).getTime()
-      }));
+      .sort((a, b) => {
+        const timeA = typeof a.time === 'number' ? a.time * 1000 : a.time;
+        const timeB = typeof b.time === 'number' ? b.time * 1000 : b.time;
+        return new Date(timeA) - new Date(timeB);
+      })
+      .map(review => {
+        // Convert seconds to milliseconds
+        const timestampMs = typeof review.time === 'number' ? review.time * 1000 : review.time;
+        const reviewDate = new Date(timestampMs);
+        // Create a unique key for each day (YYYY-MM-DD format for proper sorting)
+        const dateKey = reviewDate.toISOString().split('T')[0];
+        // Format for display: day/month
+        const dateDisplay = reviewDate.toLocaleDateString('en-US', {
+          day: 'numeric',
+          month: 'short'
+        });
+        
+        return {
+          ...review,
+          dateKey, // Used for grouping (ensures same day = same group)
+          dateDisplay, // Used for display
+          timestamp: reviewDate.getTime()
+        };
+      });
 
-    // Group by date and calculate average rating per day
+    // Group by full date (day/month/year) and calculate average rating per day
     const groupedData = sortedReviews.reduce((acc, review) => {
-      const date = review.date;
-      if (!acc[date]) {
-        acc[date] = {
-          date,
+      const dateKey = review.dateKey;
+      if (!acc[dateKey]) {
+        acc[dateKey] = {
+          dateKey,
+          dateDisplay: review.dateDisplay,
           ratings: [],
           averageRating: 0,
           count: 0
         };
       }
-      acc[date].ratings.push(review.rating);
-      acc[date].count++;
-      acc[date].averageRating = acc[date].ratings.reduce((sum, r) => sum + r, 0) / acc[date].ratings.length;
+      acc[dateKey].ratings.push(review.rating);
+      acc[dateKey].count++;
+      acc[dateKey].averageRating = acc[dateKey].ratings.reduce((sum, r) => sum + r, 0) / acc[dateKey].ratings.length;
       return acc;
     }, {});
 
-    return Object.values(groupedData).map(day => ({
-      date: day.date,
-      rating: parseFloat(day.averageRating.toFixed(1)),
-      count: day.count
-    }));
+    // Convert to array and sort by date key to ensure chronological order
+    return Object.values(groupedData)
+      .sort((a, b) => a.dateKey.localeCompare(b.dateKey))
+      .map(day => ({
+        date: day.dateDisplay,
+        rating: parseFloat(day.averageRating.toFixed(1)),
+        count: day.count
+      }));
   }, [reviews]);
 
   const CustomTooltip = ({ active, payload, label }) => {

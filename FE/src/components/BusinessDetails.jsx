@@ -17,7 +17,12 @@ const BusinessDetails = ({ business, onLoading, onError }) => {
       }
 
       const ratings = business.reviews
-        .sort((a, b) => new Date(a.time) - new Date(b.time))
+        .sort((a, b) => {
+          // Google Places API returns time in seconds, JavaScript Date expects milliseconds
+          const timeA = typeof a.time === 'number' ? a.time * 1000 : a.time;
+          const timeB = typeof b.time === 'number' ? b.time * 1000 : b.time;
+          return new Date(timeA) - new Date(timeB);
+        })
         .map(review => review.rating);
 
       const response = await axios.post('/api/predict-rating', {

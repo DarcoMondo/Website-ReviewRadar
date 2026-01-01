@@ -91,7 +91,9 @@ const ReviewList = ({ reviews, businessName, onError }) => {
   };
 
   const formatDate = (timestamp) => {
-    return new Date(timestamp).toLocaleDateString('en-US', {
+    // Google Places API returns time in seconds, JavaScript Date expects milliseconds
+    const timestampMs = typeof timestamp === 'number' ? timestamp * 1000 : timestamp;
+    return new Date(timestampMs).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -99,7 +101,12 @@ const ReviewList = ({ reviews, businessName, onError }) => {
   };
 
   const sortedReviews = reviews
-    .sort((a, b) => new Date(b.time) - new Date(a.time));
+    .sort((a, b) => {
+      // Convert seconds to milliseconds for proper date comparison
+      const timeA = typeof a.time === 'number' ? a.time * 1000 : a.time;
+      const timeB = typeof b.time === 'number' ? b.time * 1000 : b.time;
+      return new Date(timeB) - new Date(timeA);
+    });
 
   return (
     <div className="review-list">
