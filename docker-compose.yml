@@ -1,7 +1,7 @@
 services:
   backend:
     build: ./BE
-    container_name: website-review-ai-backend
+    container_name: reviewradar-backend
     ports:
       - "5001:5000"
     environment:
@@ -17,7 +17,7 @@ services:
 
   frontend:
     build: ./FE
-    container_name: website-review-ai-frontend
+    container_name: reviewradar-frontend
     ports:
       - "3000:3000"
     environment:

@@ -1,5 +1,5 @@
 {
-  "name": "website-review-ai-frontend",
+  "name": "reviewradar-frontend",
   "version": "1.0.0",
   "private": true,
   "dependencies": {
@@ -13,7 +13,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build"
+    "build": "react-scripts build",
+    "postbuild": "react-snap"
   },
   "eslintConfig": {
     "extends": [
@@ -21,6 +22,19 @@
     ]
   },
   "proxy": "http://backend:5000",
+  "reactSnap": {
+    "inlineCss": true,
+    "minifyHtml": {
+      "collapseWhitespace": false,
+      "removeComments": false
+    },
+    "puppeteerArgs": [
+      "--no-sandbox",
+      "--disable-setuid-sandbox"
+    ],
+    "skipThirdPartyRequests": true,
+    "cacheAjaxRequests": false
+  },
   "browserslist": {
     "production": [
       ">0.2%",

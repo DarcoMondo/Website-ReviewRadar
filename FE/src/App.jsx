@@ -29,9 +29,9 @@ function App() {
           <div className="text-center">
             <h1 className="display-4 fw-bold mb-2">
               <span className="me-2">📊</span>
-              Website Review AI
+              ReviewRadar
             </h1>
-            <p className="lead opacity-75">Analyze and predict review trends</p>
+            <p className="lead opacity-75">Analyze and predict Google review trends</p>
           </div>
         </div>
       </header>
@@ -66,7 +66,7 @@ function App() {
               <div className="col-lg-8">
                 <div className="card shadow-sm border-0">
                   <div className="card-body text-center p-5">
-                    <h2 className="card-title mb-3">Welcome to Website Review AI</h2>
+                    <h2 className="card-title mb-3">Welcome to ReviewRadar</h2>
                     <p className="card-text text-muted mb-4">Search for a business to start analyzing reviews</p>
                     
                     <div className="row g-4">

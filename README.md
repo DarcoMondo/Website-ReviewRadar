@@ -1,4 +1,4 @@
-# 🏪 Business Review AI
+# 📊 ReviewRadar
 
 A full-stack web application for searching places, reading reviews, and getting AI-powered insights.
 
