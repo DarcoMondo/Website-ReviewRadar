@@ -32,8 +32,7 @@ Key features:
 - Docker & Docker Compose
 
 <div align="left">
-  <img src="docs/img/" alt="React" width="80" height="80"/>
-
+  <img src="docs/img/ReviewRadar-architecture.png" alt="ReviewRadar-architecture" width="400"/>
 </div>
 
 ## Getting Started
@@ -48,7 +47,7 @@ Key features:
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/DarcoMondo/Website-ReviewRadar.git
 cd Website-GoogleReviewAudit
 ```
 
@@ -85,3 +84,9 @@ docker-compose down
 # Rebuild and restart
 docker-compose build && docker-compose up -d
 ```
+## Result
+<div align="left">
+  <img src="docs/img/ReviewRadar-search-feat.png" alt="ReviewRadar-search" width="400"/> <br>
+  <img src="docs/img/ReviewRadar-predict-feat.png" alt="ReviewRadar-search" width="400"/> <br>
+  <img src="docs/img/ReviewRadar-sentiment-response.png" alt="ReviewRadar-search" width="400"/>
+</div>
