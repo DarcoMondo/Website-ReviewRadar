@@ -18,7 +18,7 @@ Key features:
 ## Technologies Used
 
 **Backend:**
-- Python (Flask)
+- Python Flask
 - Google Places API
 - Hugging Face Router API (AI models)
 
