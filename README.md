@@ -1,74 +1,84 @@
-# 📊 ReviewRadar
+# ReviewRadar
 
-A full-stack web application for searching places, reading reviews, and getting AI-powered insights.
+## Introduction
 
-## 🚀 Features
+ReviewRadar is a web application that helps businesses manage and analyze Google reviews using artificial intelligence. It automates review analysis, generates professional responses, and predicts rating trends to save time and improve customer engagement.
 
-- **🔍 Place Search**: Search for restaurants, shops, hotels using Google Places API
-- **📝 Review Display**: View detailed reviews with ratings and photos
-- **🤖 AI Responses**: Generate AI-powered responses to customer reviews
-- **📊 Sentiment Analysis**: Analyze the sentiment of each review
-- **📈 Rating Analytics**: Visualize rating trends with interactive charts
-- **🔮 AI Predictions**: Predict future ratings using advanced AI models
-- **💬 Autocomplete**: Smart search suggestions as you type
+## Description
 
-## 🛠️ Tech Stack
+ReviewRadar connects to Google Places API to fetch business information and reviews. The application uses Hugging Face AI models to analyze sentiment, generate personalized responses, and predict future ratings based on historical data. Users can search for any business, view detailed analytics with interactive charts, and get AI-powered insights to better understand their online reputation.
 
-- **Backend**: Python Flask, Google Places API, Hugging Face AI
-- **Frontend**: React 18, JavaScript, Recharts, Lucide React
-- **Deployment**: Docker & Docker Compose
+Key features:
+- Search businesses using Google Places API
+- Analyze review sentiment automatically
+- Generate AI-powered responses to reviews
+- Visualize rating trends over time
+- Predict future ratings based on historical patterns
 
-## 🚀 Quick Start
+## Technologies Used
 
-1. **Clone and setup**
-   ```bash
-   git clone <repository-url>
-   cd Website-ReviewAI
-   cp env.example .env
-   ```
+**Backend:**
+- Python 3
+- Flask (REST API)
+- Google Places API
+- Hugging Face Router API (AI models)
 
-2. **Add API keys to `.env`**
-   ```
-   GOOGLE_API_KEY=your_google_places_api_key_here
-   HUGGINGFACE_API_KEY=your_huggingface_api_key_here
-   ```
+**Frontend:**
+- React
+- Bootstrap 5
+- Recharts (data visualization)
+- react-snap (SEO optimization)
 
-3. **Start the application**
-   ```bash
-   chmod +x entrypoint.sh
-   ./entrypoint.sh
-   ```
+**Infrastructure:**
+- Docker & Docker Compose
+- Gunicorn (production server)
 
-4. **Access**: http://localhost:3000
+## Getting Started
 
-## 🐳 Docker Commands
+### Prerequisites
+
+- Docker and Docker Compose installed
+- Google Places API key
+- Hugging Face API key
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd Website-GoogleReviewAudit
+```
+
+2. Create a `.env` file in the root directory:
+```
+GOOGLE_API_KEY=your_google_places_api_key_here
+HUGGINGFACE_API_KEY=your_huggingface_api_key_here
+```
+
+3. Start the application:
+```bash
+docker-compose up -d
+```
+
+4. Access the application at `http://localhost:3000`
+
+### API Keys
+
+- **Google Places API**: Get your key from [Google Cloud Console](https://console.cloud.google.com/)
+- **Hugging Face API**: Get your key from [Hugging Face Settings](https://huggingface.co/settings/tokens)
+
+### Docker Commands
 
 ```bash
-# Start all services
+# Start services
 docker-compose up -d
 
 # View logs
 docker-compose logs -f
 
-# Stop all services
+# Stop services
 docker-compose down
 
-# Rebuild
+# Rebuild and restart
 docker-compose build && docker-compose up -d
 ```
-
-## 🎯 Usage
-
-1. **Search for a place** using the search bar
-2. **Select a place** from the results
-3. **View reviews** and ratings
-4. **Use AI features**:
-   - 🤖 Generate AI Response
-   - 📊 Analyze Sentiment
-   - 🔮 Predict Next Rating
-5. **View analytics** with interactive charts
-
-## 🔑 API Keys
-
-- **Google Places API**: [Google Cloud Console](https://console.cloud.google.com/)
-- **Hugging Face API**: [Hugging Face Tokens](https://huggingface.co/settings/tokens)
