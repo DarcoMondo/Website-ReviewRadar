@@ -18,8 +18,7 @@ Key features:
 ## Technologies Used
 
 **Backend:**
-- Python 3
-- Flask (REST API)
+- Python (Flask)
 - Google Places API
 - Hugging Face Router API (AI models)
 
@@ -31,7 +30,11 @@ Key features:
 
 **Infrastructure:**
 - Docker & Docker Compose
-- Gunicorn (production server)
+
+<div align="left">
+  <img src="docs/img/" alt="React" width="80" height="80"/>
+
+</div>
 
 ## Getting Started
 
